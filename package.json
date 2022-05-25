@@ -1,0 +1,23 @@
+{
+  "name": "docker-router",
+  "version": "1.0.0",
+  "description": "A simple, automated HTTP router for Docker Container powered by Node.js.",
+  "main": "server.js",
+  "scripts": {
+    "test": "node=\"$( command -v node || command -v nodejs )\"; $node -c server.js",
+    "start": "sh run.sh"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nggit/node-docker-router.git"
+  },
+  "author": "nggit",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/nggit/node-docker-router/issues"
+  },
+  "homepage": "https://github.com/nggit/node-docker-router#readme",
+  "dependencies": {
+    "docker-router": "^1.0.0"
+  }
+}
