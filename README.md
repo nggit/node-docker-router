@@ -33,7 +33,7 @@ Features
 * Built-in Simple HTML cache mechanism
 * Built with Stream in mind to download/stream large files without having to load the entire file into memory
 
-node-docker-router also supports manual routing by modifying the [routes.js](routes.js) file.
+node-docker-router also supports manual routing by modifying the [routes.js](config/routes.js) file.
 
 Basic Configuration
 -------------------
