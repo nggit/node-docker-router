@@ -11,8 +11,8 @@ services:
     restart: unless-stopped
     volumes:
       - ../:/app:ro
-      - ../tmp:/tmp
-      - /var/run/docker.sock:/var/run/docker.sock
+      - ../cache:${APP_CACHE_DIR-/tmp/.node-docker-router/cache}
+      - ${DOCKER_API_ENDPOINT-/var/run/docker.sock}:${DOCKER_API_ENDPOINT-/var/run/docker.sock}
     ports:
       - "80:8080"
       - "443:8443"
