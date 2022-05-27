@@ -41,10 +41,23 @@ Just edit the [.env](.env) file.
 
 Usage
 -----
-There are many ways to run this as I have explained also in [node-protocol-multiplexer](https://github.com/nggit/node-protocol-multiplexer), the entry point is [run.sh](run.sh):
+There are many ways to run this. The entry point is [run.sh](run.sh):
 ```
 sh run.sh
 ```
+
+Or if you prefer to run this as a container too:
+```
+cd build/
+docker-compose build
+docker-compose up -d
+```
+
+Then verify if it works:
+```
+curl -H "Host: mydomain" http://localhost
+```
+
 License
 -------
 MIT
