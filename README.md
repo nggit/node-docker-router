@@ -37,7 +37,12 @@ node-docker-router also supports manual routing by modifying the [routes.js](con
 
 Basic Configuration
 -------------------
-Just edit the [.env](.env) file.
+Copy the default [config/.env](config/.env) file to this directory if you don't have one:
+```
+cp config/.env .
+```
+
+Then simply edit it before running `sh run.sh` or executing it via the `docker-compose` command.
 
 Usage
 -----
