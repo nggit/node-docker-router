@@ -51,7 +51,7 @@ There are many ways to run this. The entry point is [run.sh](run.sh):
 sh run.sh
 ```
 
-Or if you prefer to run this as a container too:
+Or if you prefer to run this in a container too (as a containerized app):
 ```
 cd build/
 docker-compose build
