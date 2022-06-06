@@ -24,7 +24,7 @@ const listenHost = process.env.APP_HOST ? process.env.APP_HOST : '0.0.0.0'; // n
 
 const ports = {
   http: process.env.APP_HTTP_PORT ? process.env.APP_HTTP_PORT.replace(/\s+/g, '').split(',') : ['80:80'],
-  https: process.env.APP_HTTPS_PORT ? process.env.APP_HTTPS_PORT.replace(/\s+/g, '').split(',') : ['443:80'],
+  https: process.env.APP_HTTPS_PORT ? process.env.APP_HTTPS_PORT.replace(/\s+/g, '').split(',') : ['443:80']
 };
 
 const targets = {};
@@ -190,9 +190,9 @@ const serverOnConnect = function(socket) {
                       writeCache = fs.createWriteStream(cachePath, { encoding: null, flags: 'wx' });
 
                       writeCache.on('error', err => {
-                        client.resume();
-
                         cacheEnabled = false;
+
+                        client.resume();
                         log('writeCache: %s: %s', cachePath, errors.getMessage(err.code));
                       });
 
