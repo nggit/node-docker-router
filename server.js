@@ -59,7 +59,7 @@ const serverOnConnect = function(socket) {
   const localPort = socket.localPort;
 
   const reqOnData = function(data) {
-    clearTimeout(timeouts.socket);
+    clearTimeout(timeouts.serverReceive);
 
     if (client === undefined) {
       data = Buffer.concat([header, data]);
@@ -80,8 +80,7 @@ const serverOnConnect = function(socket) {
           );
         }
 
-        const domain = reqHeader.getHost().replace(/:\d+$/, ''); // host without port
-        const name = parse.domain(domain).getName(); // in docker context, "name" means the container name
+        const name = parse.host(reqHeader.getHost()).getName(); // in docker context, "name" means the container name
 
         // currently we are using encodeURIComponent instead of hashing solutions
         // it's fast, no collisions, but can only cache files with a maximum name length of 255
@@ -98,11 +97,11 @@ const serverOnConnect = function(socket) {
           debug.print(Object.assign(reqHeader.getHeaders(), { _targetHost: ipAddress, _targetPort: port }));
 
           client = net.createConnection({ port: port, host: ipAddress, noDelay: true }, () => {
-            clearTimeout(timeouts.client);
+            clearTimeout(timeouts.clientConnect);
             debug.print('*** Connected to', ipAddress, 'port', port);
           });
 
-          timeouts.client = setTimeout(() => {
+          timeouts.clientConnect = setTimeout(() => {
             debug.print('client: timeout');
             client.destroy();
             socket.write(
@@ -113,7 +112,7 @@ const serverOnConnect = function(socket) {
           }, proxyConnectTimeout * 1000);
 
           client.on('error', err => {
-            clearTimeout(timeouts.client);
+            clearTimeout(timeouts.clientConnect);
 
             // this will refresh the cached ip address
             if (targets[name] && ['ECONNREFUSED', 'ETIMEDOUT', 'EHOSTUNREACH'].indexOf(err.code) > -1) {
@@ -323,7 +322,7 @@ const serverOnConnect = function(socket) {
             msg, undefined, () => socket.destroy()
           );
         } else {
-          timeouts.socket = setTimeout(() => {
+          timeouts.serverReceive = setTimeout(() => {
             debug.print('socket: timeout');
             socket.end(
               'HTTP/1.0 408 Request Timeout\r\n' +
