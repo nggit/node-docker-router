@@ -69,7 +69,7 @@ const serverOnConnect = function(socket) {
 
         const reqHeader = parse.header(data.toString('latin1')).append({
           'X-Forwarded-For': socket.remoteAddress.substring(socket.remoteAddress.lastIndexOf(',')).replace(/^,\s*/, ''),
-          'X-Forwarded-Proto': ports.https.indexOf(localPort) > -1 ? 'https' : 'http'
+          'X-Forwarded-Proto': ports.https.map(n => toNumber(n)).indexOf(localPort) > -1 ? 'https' : 'http'
         });
 
         if (!(reqHeader.getHost() && reqHeader.getPath() && reqHeader.getMethod())) {
