@@ -87,7 +87,7 @@ const serverOnConnect = function(socket) {
         // it's fast, no collisions, but can only cache files with a maximum name length of 255
         const cacheFile = encodeURIComponent(reqHeader.getPath());
         const cachePath = (cacheDir || '/tmp/.node-docker-router/cache').replace(/\/+$/, '')
-          + '/' + name + '/' + localPort + '/' + reqHeader.getProtocolVersion() + '/gzip-'
+          + '/' + name + '/' + ports[localPort] + '/' + reqHeader.getProtocolVersion() + '/gzip-'
           + ([reqHeader.getHeaders()['accept-encoding']].join().toLowerCase().indexOf('gzip') > -1) + '/' + cacheFile;
 
         cacheEnabled = cacheEnabled && cacheFile.length < 256 && reqHeader.getMethod().toUpperCase() === 'GET';
