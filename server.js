@@ -156,7 +156,9 @@ const serverOnConnect = function(socket) {
                 if (data.indexOf('\r\n\r\n') > 0) {
                   client.pause();
 
-                  const resHeader = parse.header(data.toString('latin1')).append({ 'Cache-Control': 'public, max-age=' + cacheMaxAge });
+                  const resHeader = parse.header(data.toString('latin1'))
+                    .remove(['cache-control'])
+                    .append({ 'Cache-Control': 'public, max-age=' + cacheMaxAge });
 
                   debug.print(resHeader.getHeaders());
 
@@ -195,13 +197,13 @@ const serverOnConnect = function(socket) {
                         log('writeCache: %s: %s', cachePath, errors.getMessage(err.code));
                       });
 
-                      writeCache.write(resHeader.getResult(), 'latin1', () => client.resume());
+                      writeCache.write(resHeader.save(), 'latin1', () => client.resume());
                     });
                   } else {
                     client.resume();
                   }
 
-                  bytesRead += resHeader.getResult().length;
+                  bytesRead += resHeader.save().length;
                 } else {
                   buf = data;
 
@@ -240,7 +242,7 @@ const serverOnConnect = function(socket) {
           });
 
           // a \r\n\r\n is found, sending to the destination server for the first time
-          client.write(reqHeader.getResult(), 'latin1', () => socket.resume());
+          client.write(reqHeader.save(), 'latin1', () => socket.resume());
         } // proxy
 
         let readCache;
