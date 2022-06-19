@@ -80,13 +80,15 @@ const serverOnConnect = function(socket) {
           );
         }
 
-        const name = parse.host(reqHeader.getHost()).getName(); // in docker context, "name" means the container name
+        const parseHost = parse.host(reqHeader.getHost());
+        const domain = parseHost.getDomain(); // host without port
+        const name = parseHost.getName(); // in docker context, "name" means the container name
 
         // currently we are using encodeURIComponent instead of hashing solutions
         // it's fast, no collisions, but can only cache files with a maximum name length of 255
         const cacheFile = encodeURIComponent(reqHeader.getPath());
         const cachePath = (cacheDir || '/tmp/.node-docker-router/cache').replace(/\/+$/, '')
-          + '/' + name + '/' + ports[localPort] + '/' + reqHeader.getProtocolVersion() + '/gzip-'
+          + '/' + domain + '/' + ports[localPort] + '/' + reqHeader.getProtocolVersion() + '/gzip-'
           + ([reqHeader.getHeaders()['accept-encoding']].join().toLowerCase().indexOf('gzip') > -1) + '/' + cacheFile;
 
         cacheEnabled = cacheEnabled && cacheFile.length < 256 && reqHeader.getMethod().toUpperCase() === 'GET';
