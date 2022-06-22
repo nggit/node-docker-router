@@ -43,6 +43,17 @@ const appDebug = process.env.APP_DEBUG && process.env.APP_DEBUG.toLowerCase() ==
 
 const debug = new debugs(appDebug);
 
+function createHttpResponse(version, status, body) {
+  if (version !== '1.0') {
+    version = '1.1';
+  }
+
+  return 'HTTP/' + version + ' ' + status + '\r\n' +
+    'Content-Length: ' + body.length + '\r\n' +
+    'Connection: close\r\n\r\n' +
+    body;
+}
+
 const serverOnConnect = function(socket) {
   debug.print('Client connected to worker %d', process.pid);
 
@@ -74,9 +85,8 @@ const serverOnConnect = function(socket) {
 
         if (!(reqHeader.getHost() && reqHeader.getPath() && reqHeader.getMethod())) {
           return socket.write(
-            'HTTP/1.0 400 Bad Request\r\n' +
-            'Connection: close\r\n\r\n' +
-            'Bad request', undefined, () => socket.destroy()
+            createHttpResponse(reqHeader.getProtocolVersion(), '400 Bad Request', 'Bad request'),
+            undefined, () => socket.destroy()
           );
         }
 
@@ -99,22 +109,21 @@ const serverOnConnect = function(socket) {
           debug.print(Object.assign(reqHeader.getHeaders(), { _targetHost: ipAddress, _targetPort: port }));
 
           client = net.createConnection({ port: port, host: ipAddress, noDelay: true }, () => {
-            clearTimeout(timeouts.clientConnect);
+            clearTimeout(timeouts.proxyConnect);
             debug.print('*** Connected to', ipAddress, 'port', port);
           });
 
-          timeouts.clientConnect = setTimeout(() => {
+          timeouts.proxyConnect = setTimeout(() => {
             debug.print('client: timeout');
             client.destroy();
             socket.write(
-              'HTTP/1.0 503 Service Unavailable\r\n' +
-              'Connection: close\r\n\r\n' +
-              'Failed to establish connection to the origin server', undefined, () => socket.destroy()
+              createHttpResponse(reqHeader.getProtocolVersion(), '503 Service Unavailable', 'Failed to establish connection to the origin server'),
+              undefined, () => socket.destroy()
             );
           }, proxyConnectTimeout * 1000);
 
           client.on('error', err => {
-            clearTimeout(timeouts.clientConnect);
+            clearTimeout(timeouts.proxyConnect);
 
             // this will refresh the cached ip address
             if (targets[name] && ['ECONNREFUSED', 'ETIMEDOUT', 'EHOSTUNREACH'].indexOf(err.code) > -1) {
@@ -126,9 +135,8 @@ const serverOnConnect = function(socket) {
             }[err.code] || util.format('Service unavailable (%s)', err.code);
 
             socket.write(
-              'HTTP/1.0 503 Service Unavailable\r\n' +
-              'Connection: close\r\n\r\n' +
-              msg, undefined, () => socket.destroy()
+              createHttpResponse(reqHeader.getProtocolVersion(), '503 Service Unavailable', msg),
+              undefined, () => socket.destroy()
             );
             log('%s: %s', name, errors.getMessage(err.code));
           });
@@ -296,9 +304,8 @@ const serverOnConnect = function(socket) {
                 targets[name] = { ipAddress: ipAddress, time: Date.now() };
               }).catch(msg => {
                 socket.write(
-                  'HTTP/1.0 503 Service Unavailable\r\n' +
-                  'Connection: close\r\n\r\n' +
-                  'Failed to lookup ' + name + ': ' + msg, undefined, () => socket.destroy()
+                  createHttpResponse(reqHeader.getProtocolVersion(), '503 Service Unavailable', 'Failed to lookup ' + name + ': ' + msg),
+                  undefined, () => socket.destroy()
                 );
                 log('%s: %s', reqHeader.getHost(), msg);
               });
