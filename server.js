@@ -377,7 +377,7 @@ const serverOnConnect = function(socket) {
 function mergeOptions(defaultOpts, options) {
   return Object.assign(
     Object.assign({}, defaultOpts),
-    Object.assign({}, options)
+    options
   );
 }
 
