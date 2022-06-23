@@ -1,6 +1,6 @@
 {
   "name": "docker-router",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "A simple, automated HTTP router for Docker Container powered by Node.js.",
   "main": "server.js",
   "scripts": {
