@@ -304,7 +304,7 @@ const serverOnConnect = function(socket) {
                 targets[name] = { ipAddress: ipAddress, time: Date.now() };
               }).catch(msg => {
                 socket.write(
-                  createHttpResponse(reqHeader.getProtocolVersion(), '503 Service Unavailable', 'Failed to lookup ' + name + ': ' + msg),
+                  createHttpResponse(reqHeader.getProtocolVersion(), '404 Not Found', 'Failed to lookup ' + name + ': ' + msg),
                   undefined, () => socket.destroy()
                 );
                 log('%s: %s', reqHeader.getHost(), msg);
