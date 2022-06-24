@@ -65,7 +65,7 @@ function createHttpResponse(version, status, body, header) {
   }
 
   return 'HTTP/' + version + ' ' + status + '\r\n' +
-    Object.values(headers).join('\r\n') + '\r\n\r\n' +
+    Object.keys(headers).map(k => headers[k]).join('\r\n') + '\r\n\r\n' +
     body;
 }
 
