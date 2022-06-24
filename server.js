@@ -43,14 +43,29 @@ const appDebug = process.env.APP_DEBUG && process.env.APP_DEBUG.toLowerCase() ==
 
 const debug = new debugs(appDebug);
 
-function createHttpResponse(version, status, body) {
+function createHttpResponse(version, status, body, header) {
   if (version !== '1.0') {
     version = '1.1';
   }
 
+  const headers = {
+    'Connection': 'Connection: close',
+    'Date': 'Date: ' + (new Date()).toUTCString(),
+    'Server': 'Server: node-docker-router'
+  };
+
+  if (body.length > 0) {
+    headers['Content-Length'] = 'Content-Length: ' + body.length;
+  }
+
+  if (Array.isArray(header)) {
+    for (const v of header) {
+      headers[v.substring(0, v.indexOf(':'))] = v;
+    }
+  }
+
   return 'HTTP/' + version + ' ' + status + '\r\n' +
-    'Content-Length: ' + body.length + '\r\n' +
-    'Connection: close\r\n\r\n' +
+    Object.values(headers).join('\r\n') + '\r\n\r\n' +
     body;
 }
 
@@ -117,7 +132,10 @@ const serverOnConnect = function(socket) {
             debug.print('client: timeout');
             client.destroy();
             socket.write(
-              createHttpResponse(reqHeader.getProtocolVersion(), '503 Service Unavailable', 'Failed to establish connection to the origin server'),
+              createHttpResponse(reqHeader.getProtocolVersion(), '503 Service Unavailable', 'Failed to establish connection to the origin server', [
+                'Content-Type: text/html',
+                'Cache-Control: no-cache, must-revalidate, max-age=0'
+              ]),
               undefined, () => socket.destroy()
             );
           }, proxyConnectTimeout * 1000);
@@ -135,7 +153,10 @@ const serverOnConnect = function(socket) {
             }[err.code] || util.format('Service unavailable (%s)', err.code);
 
             socket.write(
-              createHttpResponse(reqHeader.getProtocolVersion(), '503 Service Unavailable', msg),
+              createHttpResponse(reqHeader.getProtocolVersion(), '503 Service Unavailable', msg, [
+                'Content-Type: text/html',
+                'Cache-Control: no-cache, must-revalidate, max-age=0'
+              ]),
               undefined, () => socket.destroy()
             );
             log('%s: %s', name, errors.getMessage(err.code));
@@ -304,7 +325,10 @@ const serverOnConnect = function(socket) {
                 targets[name] = { ipAddress: ipAddress, time: Date.now() };
               }).catch(msg => {
                 socket.write(
-                  createHttpResponse(reqHeader.getProtocolVersion(), '404 Not Found', 'Failed to lookup ' + name + ': ' + msg),
+                  createHttpResponse(reqHeader.getProtocolVersion(), '404 Not Found', 'Failed to lookup ' + name + ': ' + msg, [
+                    'Content-Type: text/html',
+                    'Cache-Control: no-cache, must-revalidate, max-age=0'
+                  ]),
                   undefined, () => socket.destroy()
                 );
                 log('%s: %s', reqHeader.getHost(), msg);
