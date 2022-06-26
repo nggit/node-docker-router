@@ -98,7 +98,7 @@ const serverOnConnect = function(socket) {
           'X-Forwarded-Proto': ports.https.map(n => toNumber(n)).indexOf(localPort) > -1 ? 'https' : 'http'
         });
 
-        if (!(reqHeader.getHost() && reqHeader.getPath() && reqHeader.getMethod())) {
+        if (!(reqHeader.getMethod() && reqHeader.getPath() && reqHeader.getHost())) {
           return socket.write(
             createHttpResponse(reqHeader.getProtocolVersion(), '400 Bad Request', 'Bad request'),
             undefined, () => socket.destroy()
@@ -340,11 +340,12 @@ const serverOnConnect = function(socket) {
         // a \r\n\r\n has not yet been found
         // fill data into the header, until a \r\n\r\n is found
         header = data;
+        let msg;
 
         if (header.length > 8192) {
-          let msg;
+          const reqHeader = parse.header(header.toString('latin1'));
 
-          if (header.indexOf(' HTTP/') > 0 && header.toString().toLowerCase().indexOf('\r\nhost:') > 0) {
+          if (reqHeader.getMethod() && reqHeader.getPath() && reqHeader.getHost()) {
             // if it's a valid request, then it's not a "bad request"
             msg = 'Request header too large';
           } else {
@@ -352,18 +353,18 @@ const serverOnConnect = function(socket) {
           }
 
           socket.write(
-            'HTTP/1.0 400 Bad Request\r\n' +
-            'Connection: close\r\n\r\n' +
-            msg, undefined, () => socket.destroy()
+            createHttpResponse(reqHeader.getProtocolVersion(), '400 Bad Request', msg),
+            undefined, () => socket.destroy()
           );
         } else {
           timeouts.serverReceive = setTimeout(() => {
-            debug.print('socket: timeout');
+            const reqHeader = parse.header(header.toString('latin1'));
+            msg = 'Timed out while waiting for request to complete';
+
             socket.end(
-              'HTTP/1.0 408 Request Timeout\r\n' +
-              'Connection: close\r\n\r\n' +
-              'Timed out while waiting for request to complete'
+              createHttpResponse(reqHeader.getProtocolVersion(), '408 Request Timeout', msg)
             );
+            debug.print('socket: timeout');
           }, 30000);
         }
       }
