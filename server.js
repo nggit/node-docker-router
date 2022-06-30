@@ -50,6 +50,7 @@ function createHttpResponse(version, status, body, header) {
 
   const headers = {
     'Connection': 'Connection: close',
+    'Content-Type': 'Content-Type: text/html',
     'Date': 'Date: ' + (new Date()).toUTCString(),
     'Server': 'Server: node-docker-router'
   };
@@ -133,7 +134,6 @@ const serverOnConnect = function(socket) {
             client.destroy();
             socket.write(
               createHttpResponse(reqHeader.getProtocolVersion(), '503 Service Unavailable', 'Failed to establish connection to the origin server', [
-                'Content-Type: text/html',
                 'Cache-Control: no-cache, must-revalidate, max-age=0'
               ]),
               undefined, () => socket.destroy()
@@ -154,7 +154,6 @@ const serverOnConnect = function(socket) {
 
             socket.write(
               createHttpResponse(reqHeader.getProtocolVersion(), '503 Service Unavailable', msg, [
-                'Content-Type: text/html',
                 'Cache-Control: no-cache, must-revalidate, max-age=0'
               ]),
               undefined, () => socket.destroy()
@@ -326,7 +325,6 @@ const serverOnConnect = function(socket) {
               }).catch(msg => {
                 socket.write(
                   createHttpResponse(reqHeader.getProtocolVersion(), '404 Not Found', 'Failed to lookup ' + name + ': ' + msg, [
-                    'Content-Type: text/html',
                     'Cache-Control: no-cache, must-revalidate, max-age=0'
                   ]),
                   undefined, () => socket.destroy()
