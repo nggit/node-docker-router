@@ -50,13 +50,13 @@ function createHttpResponse(version, status, body, header) {
 
   const headers = {
     'Connection': 'Connection: close',
-    'Content-Type': 'Content-Type: text/html',
+    'Content-Length': 'Content-Length: ' + body.length,
     'Date': 'Date: ' + (new Date()).toUTCString(),
     'Server': 'Server: node-docker-router'
   };
 
   if (body.length > 0) {
-    headers['Content-Length'] = 'Content-Length: ' + body.length;
+    headers['Content-Type'] = 'Content-Type: text/html';
   }
 
   if (Array.isArray(header)) {
